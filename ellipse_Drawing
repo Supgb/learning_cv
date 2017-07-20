@@ -1,0 +1,45 @@
+#include<opencv2/core.hpp>
+#include<opencv2/opencv.hpp>
+#include<iostream>
+
+using namespace std;
+using namespace cv;
+
+int main()
+{
+
+	Mat convex = Mat::zeros(480, 640, CV_8UC3);
+
+	circle(convex, Point(320, 240), 5, Scalar(255, 0, 255), -1, 16);
+	int angle1 = 0;
+	int	angle = 0;
+	int angle2 = 0;
+	int	angle3 = 0;
+	while (waitKey(10) != 27)
+	{
+		circle(convex, Point(320, 240), 5, Scalar(255, 0, 255), -1);
+		ellipse(convex, Point(320, 240), Size(100, 200), angle, 0, 360, Scalar(0, 255, 0), 3, 16);
+		// Size(sub axe, main axe)
+		ellipse(convex, Point(320, 240), Size(100, 200), angle1 + 45, 0, 360, Scalar(0, 0, 255), 3, 16);
+		ellipse(convex, Point(320, 240), Size(100, 200), angle2 + 90, 0, 360, Scalar(0, 255, 0), 3, 16);
+		ellipse(convex, Point(320, 240), Size(100, 200), angle3 - 45, 0, 360, Scalar(255, 0, 0), 3, 16);
+		angle1--;
+		angle++;
+		angle2++;
+		angle3--;
+		imshow("win", convex);
+		convex = Mat::zeros(480, 640, CV_8UC3);
+		if (angle == 360)
+		{
+			angle = 0;
+			angle1 = 0;
+			angle2 = 0;
+			angle3 = 0;
+		}
+		waitKey(10);
+	}
+	//      waitKey(0);
+	destroyAllWindows();
+	return 0;
+}
+
