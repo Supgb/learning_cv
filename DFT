@@ -1,0 +1,50 @@
+Mat& performDFT(const Mat& InputArray, Mat& magI)
+{
+	using namespace std;
+	// Step1: get Optimal size of inputArray;
+	Mat padded;
+	int optR = getOptimalDFTSize(InputArray.rows);
+	int optC = getOptimalDFTSize(InputArray.cols);
+	copyMakeBorder(InputArray, padded, 0, abs(optR - InputArray.rows), 0, abs(optR - InputArray.cols), 
+		BORDER_CONSTANT, Scalar::all(0));
+
+	// Step2: Make place for the complex and real values;
+	Mat complex = Mat::zeros(padded.size(), CV_32F);
+	Mat plane[] = { complex, Mat_<float>(padded) };
+	merge(plane, 2, complex);
+
+	// Step3: Apply DFT transformation;
+	dft(complex, complex);
+
+	// Step4: Transform the real and complex values to Magnitude;
+	split(complex, plane);
+	magnitude(plane[0], plane[1], plane[0]);
+	magI = plane[0];
+
+	// Step5: Switch to a logarithmic scale;
+	magI += Scalar::all(1);
+	log(magI, magI);
+
+	// Step6: Crop and arrange;
+	magI = magI(Rect(0, 0, magI.cols & -2, magI.rows & -2));
+	int cx = magI.cols / 2;
+	int cy = magI.rows / 2;
+
+	Mat q0 = magI(Rect(0, 0, cx, cy));		// Left Top;
+	Mat q1 = magI(Rect(cx, 0, cx, cy));		// Right Top;
+	Mat q2 = magI(Rect(0, cy, cx, cy));		// Left Bottom;
+	Mat q3 = magI(Rect(cx, cy, cx, cy));	// Right Bottom;
+
+	Mat temp;
+	q0.copyTo(temp);
+	q3.copyTo(q0);
+	temp.copyTo(q3);
+	q1.copyTo(temp);
+	q2.copyTo(q1);
+	temp.copyTo(q2);
+
+	// Normalize;
+	normalize(magI, magI, 0, 1, NORM_MINMAX);
+
+	return magI;
+}
